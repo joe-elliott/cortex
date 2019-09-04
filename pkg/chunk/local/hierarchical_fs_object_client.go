@@ -36,12 +36,12 @@ func (cfg *HierarchicalFSConfig) RegisterFlags(f *flag.FlagSet) {
 
 // HierarchicalFSObjectClient holds config for filesystem as object store
 type HierarchicalFSObjectClient struct {
-	cfg  FSConfig
+	cfg  HierarchicalFSConfig
 	hash hash.Hash64
 }
 
 // NewHierarchicalFSObjectClient makes a chunk.ObjectClient which stores chunks as files in the local filesystem.
-func NewHierarchicalFSObjectClient(cfg FSConfig) (*HierarchicalFSObjectClient, error) {
+func NewHierarchicalFSObjectClient(cfg HierarchicalFSConfig) (*HierarchicalFSObjectClient, error) {
 	if err := ensureDirectory(cfg.Directory); err != nil {
 		return nil, err
 	}
