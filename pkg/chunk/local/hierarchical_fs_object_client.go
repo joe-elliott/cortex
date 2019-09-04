@@ -3,6 +3,7 @@ package local
 import (
 	"context"
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"hash"
 	"io/ioutil"
@@ -22,6 +23,16 @@ import (
 const (
 	folderCount = uint64(10000)
 )
+
+// HierarchicalFSConfig is the config for a FSObjectClient.
+type HierarchicalFSConfig struct {
+	Directory string `yaml:"directory"`
+}
+
+// RegisterFlags registers flags.
+func (cfg *HierarchicalFSConfig) RegisterFlags(f *flag.FlagSet) {
+	f.StringVar(&cfg.Directory, "local.hierarchical-chunk-directory", "", "Directory to store chunks in.")
+}
 
 // FSObjectClient holds config for filesystem as object store
 type HierarchicalFSObjectClient struct {
