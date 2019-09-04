@@ -34,13 +34,13 @@ func (cfg *HierarchicalFSConfig) RegisterFlags(f *flag.FlagSet) {
 	f.StringVar(&cfg.Directory, "local.hierarchical-chunk-directory", "", "Directory to store chunks in.")
 }
 
-// FSObjectClient holds config for filesystem as object store
+// HierarchicalFSObjectClient holds config for filesystem as object store
 type HierarchicalFSObjectClient struct {
 	cfg  FSConfig
 	hash hash.Hash64
 }
 
-// NewFSObjectClient makes a chunk.ObjectClient which stores chunks as files in the local filesystem.
+// NewHierarchicalFSObjectClient makes a chunk.ObjectClient which stores chunks as files in the local filesystem.
 func NewHierarchicalFSObjectClient(cfg FSConfig) (*HierarchicalFSObjectClient, error) {
 	if err := ensureDirectory(cfg.Directory); err != nil {
 		return nil, err
