@@ -152,6 +152,8 @@ func NewObjectClient(name string, cfg Config, schemaCfg chunk.SchemaConfig) (chu
 		return cassandra.NewStorageClient(cfg.CassandraStorageConfig, schemaCfg)
 	case "filesystem":
 		return local.NewFSObjectClient(cfg.FSConfig)
+	case "hierarchical-filesystem":
+		return local.NewHierarchicalFSObjectClient(cfg.FSConfig)
 	default:
 		return nil, fmt.Errorf("Unrecognized storage client %v, choose one of: aws, cassandra, inmemory, gcp, bigtable, bigtable-hashed", name)
 	}
