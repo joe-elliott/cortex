@@ -193,6 +193,10 @@ func (m *TableManager) loop() {
 	}
 }
 
+// The intention of bucketRetentionLoop() is to enforce retention policy when using either the filesystem or hierarchical-filesystem
+// object store types.  This _only_ works when running in single process mode b/c otherwise the TableManager will not have access to the local
+// filesystem of the ingesters.  If anyone were to ever run Cortex as microservices and want to use the filesystem object store type this would need
+// some consideration.
 func (m *TableManager) bucketRetentionLoop() {
 	defer m.wait.Done()
 
