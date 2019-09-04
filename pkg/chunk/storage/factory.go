@@ -186,12 +186,9 @@ func NewTableClient(name string, cfg Config) (chunk.TableClient, error) {
 
 // NewBucketClient makes a new bucket client based on the configuration.
 func NewBucketClient(storageConfig Config) (chunk.BucketClient, error) {
-	switch name {
-	case "filesystem":
-		return local.NewFSObjectClient(cfg.FSConfig)
-	case "hierarchical-filesystem":
-		return local.NewHierarchicalFSObjectClient(cfg.FSConfig)
-	default:
-		return nil, nil
+	if storageConfig.FSConfig.Directory != "" {
+		return local.NewFSObjectClient(storageConfig.FSConfig)
 	}
+
+	return nil, nil
 }
