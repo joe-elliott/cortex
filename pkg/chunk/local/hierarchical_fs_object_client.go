@@ -2,11 +2,21 @@ package local
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"hash"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
 	"time"
+
+	"hash/fnv"
 
 	"github.com/cortexproject/cortex/pkg/chunk"
 	"github.com/cortexproject/cortex/pkg/chunk/util"
-	"hash/fnv"
+	pkgUtil "github.com/cortexproject/cortex/pkg/util"
+	"github.com/go-kit/kit/log/level"
 )
 
 const (
@@ -15,8 +25,8 @@ const (
 
 // FSObjectClient holds config for filesystem as object store
 type HierarchicalFSObjectClient struct {
-	cfg FSConfig,
-	hash hash.Hash64,
+	cfg  FSConfig
+	hash hash.Hash64
 }
 
 // NewFSObjectClient makes a chunk.ObjectClient which stores chunks as files in the local filesystem.
@@ -26,7 +36,7 @@ func NewHierarchicalFSObjectClient(cfg FSConfig) (*HierarchicalFSObjectClient, e
 	}
 
 	return &HierarchicalFSObjectClient{
-		cfg: cfg,
+		cfg:  cfg,
 		hash: fnv.New64a(),
 	}, nil
 }
@@ -35,7 +45,8 @@ func NewHierarchicalFSObjectClient(cfg FSConfig) (*HierarchicalFSObjectClient, e
 func (HierarchicalFSObjectClient) Stop() {}
 
 // PutChunks implements ObjectClient
-func (f *HierarchicalFSObjectClient) PutChunks(_ context.Context, chunks []chunk.Chunk) error {	for i := range chunks {
+func (f *HierarchicalFSObjectClient) PutChunks(_ context.Context, chunks []chunk.Chunk) error {
+	for i := range chunks {
 		buf, err := chunks[i].Encoded()
 		if err != nil {
 			return err
@@ -83,7 +94,9 @@ func (f *HierarchicalFSObjectClient) DeleteChunksBefore(ctx context.Context, ts 
 }
 
 func (f *HierarchicalFSObjectClient) filenameFromChunk(c chunk.Chunk) string {
-	folderName := fmt.Sprintf("%x", f.hash(c.ExternalKey) % folderCount)
+	f.hash.Write([]byte(c.ExternalKey()))
 
-	return path.Join(f.cfg.Directory, folderName, base64.StdEncoding.EncodeToString([]byte(chunks[i].ExternalKey())) 
+	folderName := fmt.Sprintf("%x", f.hash.Sum64()%folderCount)
+
+	return path.Join(f.cfg.Directory, folderName, base64.StdEncoding.EncodeToString([]byte(c.ExternalKey())))
 }
