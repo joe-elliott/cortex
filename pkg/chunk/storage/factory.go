@@ -27,12 +27,13 @@ type StoreLimits interface {
 
 // Config chooses which storage client to use.
 type Config struct {
-	AWSStorageConfig       aws.StorageConfig  `yaml:"aws"`
-	GCPStorageConfig       gcp.Config         `yaml:"bigtable"`
-	GCSConfig              gcp.GCSConfig      `yaml:"gcs"`
-	CassandraStorageConfig cassandra.Config   `yaml:"cassandra"`
-	BoltDBConfig           local.BoltDBConfig `yaml:"boltdb"`
-	FSConfig               local.FSConfig     `yaml:"filesystem"`
+	AWSStorageConfig       aws.StorageConfig          `yaml:"aws"`
+	GCPStorageConfig       gcp.Config                 `yaml:"bigtable"`
+	GCSConfig              gcp.GCSConfig              `yaml:"gcs"`
+	CassandraStorageConfig cassandra.Config           `yaml:"cassandra"`
+	BoltDBConfig           local.BoltDBConfig         `yaml:"boltdb"`
+	FSConfig               local.FSConfig             `yaml:"filesystem"`
+	HierarchicalFSConfig   local.HierarchicalFSConfig `yaml:"hierarchical-filesystem"`
 
 	IndexCacheValidity time.Duration
 
@@ -153,7 +154,7 @@ func NewObjectClient(name string, cfg Config, schemaCfg chunk.SchemaConfig) (chu
 	case "filesystem":
 		return local.NewFSObjectClient(cfg.FSConfig)
 	case "hierarchical-filesystem":
-		return local.NewHierarchicalFSObjectClient(cfg.FSConfig)
+		return local.NewHierarchicalFSObjectClient(cfg.HierarchicalFSConfig)
 	default:
 		return nil, fmt.Errorf("Unrecognized storage client %v, choose one of: aws, cassandra, inmemory, gcp, bigtable, bigtable-hashed", name)
 	}
@@ -188,6 +189,8 @@ func NewTableClient(name string, cfg Config) (chunk.TableClient, error) {
 func NewBucketClient(storageConfig Config) (chunk.BucketClient, error) {
 	if storageConfig.FSConfig.Directory != "" {
 		return local.NewFSObjectClient(storageConfig.FSConfig)
+	} else if storageConfig.HierarchicalFSConfig.Directory != "" {
+		return local.NewHierarchicalFSObjectClient(storageConfig.HierarchicalFSConfig)
 	}
 
 	return nil, nil
