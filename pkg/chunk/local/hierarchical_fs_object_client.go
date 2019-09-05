@@ -46,6 +46,11 @@ func NewHierarchicalFSObjectClient(cfg HierarchicalFSConfig) (*HierarchicalFSObj
 		return nil, err
 	}
 
+	// create all possible subdirectories now
+	for i := uint64(0); i < folderCount; i++ {
+		ensureDirectory(path.Join(cfg.Directory, fmt.Sprintf("%x", i)))
+	}
+
 	return &HierarchicalFSObjectClient{
 		cfg:  cfg,
 		hash: fnv.New64a(),
