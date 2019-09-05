@@ -13,7 +13,7 @@ import (
 	"github.com/prometheus/common/model"
 )
 
-func TestHierarchicalFsObjectClient_PutChunks(t *testing.T) {
+func TestPutChunks(t *testing.T) {
 
 	fsChunksDir, err := ioutil.TempDir(os.TempDir(), "fs-chunks")
 	require.NoError(t, err)
@@ -32,6 +32,29 @@ func TestHierarchicalFsObjectClient_PutChunks(t *testing.T) {
 
 	err = client.PutChunks(context.Context(nil), chunks)
 	require.NoError(t, err)
+}
+
+func BenchmarkHierarchicalFSObjectClient_PutChunks(b *testing.B) {
+
+	fsChunksDir, err := ioutil.TempDir(os.TempDir(), "fs-chunks")
+	require.NoError(b, err)
+
+	client, err := NewHierarchicalFSObjectClient(HierarchicalFSConfig{
+		Directory: fsChunksDir,
+	})
+	require.NoError(b, err)
+
+	defer func() {
+		require.NoError(b, os.RemoveAll(fsChunksDir))
+	}()
+
+	for i := 0; i < b.N; i++ {
+		_, chunks, err := testutils.CreateChunks(0, 10, model.Now())
+		require.NoError(b, err)
+
+		err = client.PutChunks(context.Context(nil), chunks)
+		require.NoError(b, err)
+	}
 }
 
 /*func TestHierarchicalFsObjectClient_DeleteChunksBefore(t *testing.T) {

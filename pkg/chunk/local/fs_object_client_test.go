@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cortexproject/cortex/pkg/chunk/testutils"
+	"github.com/prometheus/common/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,4 +57,27 @@ func TestFsObjectClient_DeleteChunksBefore(t *testing.T) {
 	// Verifying whether older file got deleted
 	files, _ = ioutil.ReadDir(".")
 	require.Equal(t, 1, len(files), "Number of files should be 1 after enforcing retention")
+}
+
+func BenchmarkFSObjectClient_PutChunks(b *testing.B) {
+
+	fsChunksDir, err := ioutil.TempDir(os.TempDir(), "fs-chunks")
+	require.NoError(b, err)
+
+	client, err := NewFSObjectClient(FSConfig{
+		Directory: fsChunksDir,
+	})
+	require.NoError(b, err)
+
+	defer func() {
+		require.NoError(b, os.RemoveAll(fsChunksDir))
+	}()
+
+	for i := 0; i < b.N; i++ {
+		_, chunks, err := testutils.CreateChunks(0, 10, model.Now())
+		require.NoError(b, err)
+
+		err = client.PutChunks(context.Context(nil), chunks)
+		require.NoError(b, err)
+	}
 }
